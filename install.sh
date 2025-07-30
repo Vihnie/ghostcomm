@@ -3,37 +3,26 @@
 echo "[🔧] Updating Termux..."
 pkg update -y && pkg upgrade -y
 
-echo "[📦] Installing Node.js and Git..."
-pkg install -y nodejs git
+echo "[📦] Installing Node.js, Git, and Curl..."
+pkg install -y nodejs git curl
 
 echo "[📁] Cloning GhostComm..."
-if [ -d "$HOME/ghostcomm" ]; then
-  echo "⚠️ ghostcomm folder already exists. Removing..."
-  rm -rf "$HOME/ghostcomm"
-fi
-
-git clone https://github.com/Vihnie/ghostcomm.git "$HOME/ghostcomm"
-cd "$HOME/ghostcomm" || { echo "❌ Failed to enter ghostcomm directory"; exit 1; }
+rm -rf ghostcomm  # Clean up any previous attempt
+git clone https://github.com/Vihnie/ghostcomm.git
+cd ghostcomm || { echo "❌ Failed to enter ghostcomm directory"; exit 1; }
 
 echo "[📦] Installing dependencies..."
 npm install
 
 echo "[📎] Creating GhostVin global command to launch UI..."
-mkdir -p "$HOME/.local/bin"
 
-cat << 'EOF' > "$HOME/.local/bin/GhostVin"
+# Create the GhostVin launcher script
+cat > $PREFIX/bin/GhostVin << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
-cd $HOME/ghostcomm
+cd ~/ghostcomm
 node index.js
 EOF
 
-chmod +x "$HOME/.local/bin/GhostVin"
-
-# Ensure ~/.local/bin is in PATH
-if ! grep -q 'export PATH=$HOME/.local/bin:$PATH' "$HOME/.bashrc"; then
-  echo 'export PATH=$HOME/.local/bin:$PATH' >> "$HOME/.bashrc"
-fi
-
-source "$HOME/.bashrc"
+chmod +x $PREFIX/bin/GhostVin
 
 echo "[🚀] GhostComm is ready. Type 'GhostVin' to launch the UI!"
